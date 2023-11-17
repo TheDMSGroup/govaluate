@@ -397,8 +397,8 @@ func optimizeTokens(tokens []ExpressionToken) ([]ExpressionToken, error) {
 
 			// remove all tokens that have been condensed into map
 			newTokens := make([]ExpressionToken, 0, len(tokens)-(endIndex-index))
-			newTokens = append(newTokens, tokens[:index+1]...)
-			newTokens = append(newTokens, tokens[endIndex:]...)
+			newTokens = append(newTokens, tokens[:index+2]...)
+			newTokens = append(newTokens, tokens[endIndex+1:]...)
 			tokens = newTokens
 		}
 	}
