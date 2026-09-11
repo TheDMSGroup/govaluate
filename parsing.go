@@ -59,6 +59,7 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 	var tokenValue interface{}
 	var tokenTime time.Time
 	var tokenString string
+	var tokenName string
 	var kind TokenKind
 	var character rune
 	var found bool
@@ -173,6 +174,7 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 			if found {
 				kind = FUNCTION
 				tokenValue = function
+				tokenName = tokenString
 			}
 
 			// accessor?
@@ -284,6 +286,7 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 
 	ret.Kind = kind
 	ret.Value = tokenValue
+	ret.Name = tokenName
 
 	return ret, nil, (kind != UNKNOWN)
 }
