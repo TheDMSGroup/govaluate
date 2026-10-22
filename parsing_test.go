@@ -425,6 +425,37 @@ func TestConstantParsing(test *testing.T) {
 			},
 		},
 		TokenParsingTest{
+			Name:  "Single parameter with leading underscore",
+			Input: "_foo",
+			Expected: []ExpressionToken{
+				ExpressionToken{
+					Kind:  VARIABLE,
+					Value: "_foo",
+				},
+			},
+		},
+		TokenParsingTest{
+			Name:      "Parameter with leading underscore as function argument",
+			Input:     "foo(_bar)",
+			Functions: map[string]ExpressionFunction{"foo": noop},
+			Expected: []ExpressionToken{
+				ExpressionToken{
+					Kind:  FUNCTION,
+					Value: noop,
+				},
+				ExpressionToken{
+					Kind: CLAUSE,
+				},
+				ExpressionToken{
+					Kind:  VARIABLE,
+					Value: "_bar",
+				},
+				ExpressionToken{
+					Kind: CLAUSE_CLOSE,
+				},
+			},
+		},
+		TokenParsingTest{
 			Name:  "Accessor variable",
 			Input: "foo.Var",
 			Expected: []ExpressionToken{
@@ -1227,6 +1258,37 @@ func TestPrefixParsing(test *testing.T) {
 				ExpressionToken{
 					Kind:  VARIABLE,
 					Value: "foo",
+				},
+			},
+		},
+		TokenParsingTest{
+
+			// '_' must not be read as part of the prefix operator ("!_")
+			Name:  "Boolean prefix on variable with leading underscore",
+			Input: "!_foo",
+			Expected: []ExpressionToken{
+				ExpressionToken{
+					Kind:  PREFIX,
+					Value: "!",
+				},
+				ExpressionToken{
+					Kind:  VARIABLE,
+					Value: "_foo",
+				},
+			},
+		},
+		TokenParsingTest{
+
+			Name:  "Sign prefix on variable with leading underscore",
+			Input: "-_foo",
+			Expected: []ExpressionToken{
+				ExpressionToken{
+					Kind:  PREFIX,
+					Value: "-",
+				},
+				ExpressionToken{
+					Kind:  VARIABLE,
+					Value: "_foo",
 				},
 			},
 		},
