@@ -192,6 +192,10 @@ func planStages(tokens []ExpressionToken) (*evaluationStage, error) {
 	reorderStages(stage)
 
 	stage = elideLiterals(stage)
+
+	// with the tree in its final shape, render each stage so that explanations don't have to
+	annotateStages(stage)
+
 	return stage, nil
 }
 
@@ -316,6 +320,7 @@ func planFunction(stream *tokenStream) (*evaluationStage, error) {
 		rightStage:      rightStage,
 		operator:        makeFunctionStage(token.Value.(ExpressionFunction)),
 		typeErrorFormat: "Unable to run function '%v': %v",
+		functionName:    token.Name,
 	}, nil
 }
 
@@ -361,6 +366,7 @@ func planAccessor(stream *tokenStream) (*evaluationStage, error) {
 		rightStage:      rightStage,
 		operator:        makeAccessorStage(token.Value.([]string)),
 		typeErrorFormat: "Unable to access parameter field or method '%v': %v",
+		accessorPath:    token.Value.([]string),
 	}, nil
 }
 
@@ -374,6 +380,8 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 	var symbol OperatorSymbol
 	var ret *evaluationStage
 	var operator evaluationOperator
+	var parameterName string
+	var literal interface{}
 	var err error
 
 	if !stream.hasNext() {
@@ -423,7 +431,8 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 		return nil, nil
 
 	case VARIABLE:
-		operator = makeParameterStage(token.Value.(string))
+		parameterName = token.Value.(string)
+		operator = makeParameterStage(parameterName)
 
 	case NUMERIC:
 		fallthrough
@@ -435,10 +444,12 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 		fallthrough
 	case BOOLEAN:
 		symbol = LITERAL
+		literal = token.Value
 		operator = makeLiteralStage(token.Value)
 	case TIME:
 		symbol = LITERAL
-		operator = makeLiteralStage(float64(token.Value.(time.Time).Unix()))
+		literal = float64(token.Value.(time.Time).Unix())
+		operator = makeLiteralStage(literal)
 
 	case PREFIX:
 		stream.rewind()
@@ -451,8 +462,10 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 	}
 
 	return &evaluationStage{
-		symbol:   symbol,
-		operator: operator,
+		symbol:        symbol,
+		operator:      operator,
+		parameterName: parameterName,
+		literal:       literal,
 	}, nil
 }
 
@@ -732,5 +745,6 @@ func elideStage(root *evaluationStage) *evaluationStage {
 	return &evaluationStage{
 		symbol:   LITERAL,
 		operator: makeLiteralStage(result),
+		literal:  result,
 	}
 }

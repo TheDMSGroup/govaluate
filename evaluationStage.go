@@ -40,6 +40,25 @@ type evaluationStage struct {
 
 	// regardless of which type check is used, this string format will be used as the error message for type errors
 	typeErrorFormat string
+
+	// the remaining fields describe the stage rather than drive it. They are filled in at plan
+	// time and are only read by an explaining evaluation (see explain.go); a normal evaluation
+	// never touches them.
+
+	// name of the parameter this stage reads, for VALUE stages
+	parameterName string
+
+	// the value this stage yields, for LITERAL stages
+	literal interface{}
+
+	// name of the function this stage calls, for FUNCTIONAL stages
+	functionName string
+
+	// the field path this stage accesses, for ACCESS stages
+	accessorPath []string
+
+	// this stage and everything below it, rendered back to a string
+	text string
 }
 
 var (
@@ -62,6 +81,11 @@ func (this *evaluationStage) setToNonStage(other evaluationStage) {
 	this.rightTypeCheck = other.rightTypeCheck
 	this.typeCheck = other.typeCheck
 	this.typeErrorFormat = other.typeErrorFormat
+	this.parameterName = other.parameterName
+	this.literal = other.literal
+	this.functionName = other.functionName
+	this.accessorPath = other.accessorPath
+	this.text = other.text
 }
 
 func (this *evaluationStage) isShortCircuitable() bool {
