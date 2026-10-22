@@ -737,6 +737,36 @@ func TestParameterizedEvaluation(test *testing.T) {
 
 		EvaluationTest{
 
+			Name:  "Parameter with leading underscore",
+			Input: "_foo + 2",
+			Parameters: []EvaluationParameter{
+
+				EvaluationParameter{
+					Name:  "_foo",
+					Value: 2.0,
+				},
+			},
+			Expected: 4.0,
+		},
+		EvaluationTest{
+
+			Name:  "Negated parameter with leading underscore",
+			Input: "!_foo && _bar == \"folio\"",
+			Parameters: []EvaluationParameter{
+
+				EvaluationParameter{
+					Name:  "_foo",
+					Value: false,
+				},
+				EvaluationParameter{
+					Name:  "_bar",
+					Value: "folio",
+				},
+			},
+			Expected: true,
+		},
+		EvaluationTest{
+
 			Name:  "Single parameter modified by constant",
 			Input: "foo + 2",
 			Parameters: []EvaluationParameter{
