@@ -67,7 +67,7 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 
 	// numeric is 0-9, or . or 0x followed by digits
 	// string starts with '
-	// variable is alphanumeric, always starts with a letter
+	// variable is alphanumeric, always starts with a letter or an underscore
 	// bracket always means variable
 	// symbols are anything non-alphanumeric
 	// all others read into a buffer until they reach the end of the stream
@@ -138,8 +138,10 @@ func readToken(stream *lexerStream, state lexerState, functions map[string]Expre
 			break
 		}
 
-		// regular variable - or function?
-		if unicode.IsLetter(character) {
+		// regular variable - or function? a leading underscore is allowed so that
+		// injected parameters named by convention (_account, _settings, ...) can be
+		// referenced without bracket-escaping them.
+		if unicode.IsLetter(character) || character == '_' {
 
 			tokenString = readTokenUntilFalse(stream, isVariableName)
 

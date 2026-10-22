@@ -750,6 +750,37 @@ func TestParameterizedEvaluation(test *testing.T) {
 		},
 		EvaluationTest{
 
+			Name:  "Parameter with a leading underscore",
+			Input: "_foo + 2",
+			Parameters: []EvaluationParameter{
+
+				EvaluationParameter{
+					Name:  "_foo",
+					Value: 2.0,
+				},
+			},
+			Expected: 4.0,
+		},
+		EvaluationTest{
+
+			Name:  "Underscore-prefixed map parameter passed to a function",
+			Input: "key(_account, 'kind') == 'folio'",
+			Functions: map[string]ExpressionFunction{
+				"key": func(arguments ...interface{}) (interface{}, error) {
+					return arguments[0].(map[string]interface{})[arguments[1].(string)], nil
+				},
+			},
+			Parameters: []EvaluationParameter{
+
+				EvaluationParameter{
+					Name:  "_account",
+					Value: map[string]interface{}{"kind": "folio"},
+				},
+			},
+			Expected: true,
+		},
+		EvaluationTest{
+
 			Name:  "Single parameter modified by variable",
 			Input: "foo * bar",
 			Parameters: []EvaluationParameter{
